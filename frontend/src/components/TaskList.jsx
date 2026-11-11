@@ -1,15 +1,10 @@
 import TaskItem from './TaskItem';
+import { TaskListSkeleton } from './Loaders';
 
 /** Renders a task list with loading / error / empty states. */
 export default function TaskList({ query, tasks = query?.data, empty, showDate, bg }) {
   if (query?.isPending) {
-    return (
-      <ul className="space-y-3" aria-busy="true">
-        {[0, 1, 2].map((i) => (
-          <li key={i} className="h-11 animate-pulse rounded bg-line/70" />
-        ))}
-      </ul>
-    );
+    return <TaskListSkeleton />;
   }
   if (query?.isError) {
     return (

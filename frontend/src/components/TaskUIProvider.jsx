@@ -1,8 +1,9 @@
 import { createContext, useCallback, useContext, useMemo, useRef, useState } from 'react';
+import { format } from 'date-fns';
 import { useCreateTask, useDeleteTask, useUpdateTask } from '../hooks/useTasks';
 import TaskFormSheet from './TaskFormSheet';
 import TaskDetailSheet from './TaskDetailSheet';
-import Toast from './Toast';
+import Toast, { TOAST_DURATION } from './Toast';
 
 const TaskUIContext = createContext(null);
 
@@ -12,19 +13,55 @@ const TaskUIContext = createContext(null);
  */
 export function TaskUIProvider({ children }) {
   const [sheet, setSheet] = useState(null); // { type: 'form' | 'view', task?, defaultDate? }
-  const [toast, setToast] = useState(null);
+  const [toast, setToast] = useState(null); // { title, description?, tone, key }
+  const [toastLeaving, setToastLeaving] = useState(false);
   const toastTimer = useRef();
+  const toastClock = useRef({ start: 0, remaining: 0 });
 
   const createTask = useCreateTask();
   const updateTask = useUpdateTask();
   const deleteTask = useDeleteTask();
 
-  const showToast = useCallback((message, tone = 'default') => {
+  // ---- Toasts ---------------------------------------------------------------
+  const dismissToast = useCallback(() => {
     clearTimeout(toastTimer.current);
-    setToast({ message, tone, key: Date.now() });
-    toastTimer.current = setTimeout(() => setToast(null), 2500);
+    setToastLeaving(true);
+    toastTimer.current = setTimeout(() => setToast(null), 250); // let the exit animation play
   }, []);
 
+  const scheduleDismiss = useCallback(
+    (ms) => {
+      clearTimeout(toastTimer.current);
+      toastClock.current = { start: Date.now(), remaining: ms };
+      toastTimer.current = setTimeout(dismissToast, ms);
+    },
+    [dismissToast],
+  );
+
+  /** showToast({ title, description?, tone: 'created' | 'updated' | 'deleted' | 'error' }) */
+  const showToast = useCallback(
+    (t) => {
+      setToastLeaving(false);
+      setToast({ ...t, key: Date.now() });
+      scheduleDismiss(TOAST_DURATION);
+    },
+    [scheduleDismiss],
+  );
+
+  // Hovering a toast pauses its countdown.
+  const pauseToast = () => {
+    clearTimeout(toastTimer.current);
+    const c = toastClock.current;
+    c.remaining = Math.max(800, c.remaining - (Date.now() - c.start));
+  };
+  const resumeToast = () => scheduleDismiss(toastClock.current.remaining);
+
+  const errorToast = useCallback(
+    (e) => showToast({ tone: 'error', title: 'Something went wrong', description: e.message }),
+    [showToast],
+  );
+
+  // ---- Actions --------------------------------------------------------------
   const actions = useMemo(
     () => ({
       openCreate: (defaultDate) => setSheet({ type: 'form', defaultDate }),
@@ -35,27 +72,39 @@ export function TaskUIProvider({ children }) {
       toggleStatus: (task) =>
         updateTask.mutate(
           { id: task.id, status: task.status === 'completed' ? 'in_progress' : 'completed' },
-          { onError: (e) => showToast(e.message, 'error') },
+          {
+            onSuccess: (updated) =>
+              showToast(
+                updated.status === 'completed'
+                  ? { tone: 'created', title: 'Task completed 🎉', description: updated.title }
+                  : { tone: 'updated', title: 'Moved back to In Progress', description: updated.title },
+              ),
+            onError: errorToast,
+          },
         ),
 
       remove: (task) =>
         deleteTask.mutate(task.id, {
-          onSuccess: () => showToast('Task deleted'),
-          onError: (e) => showToast(e.message, 'error'),
+          onSuccess: () => showToast({ tone: 'deleted', title: 'Task deleted', description: task.title }),
+          onError: errorToast,
         }),
 
       showToast,
     }),
-    [updateTask, deleteTask, showToast],
+    [updateTask, deleteTask, showToast, errorToast],
   );
 
   const handleSave = async (payload) => {
     if (sheet?.task) {
-      await updateTask.mutateAsync({ id: sheet.task.id, ...payload });
-      showToast('Task updated');
+      const saved = await updateTask.mutateAsync({ id: sheet.task.id, ...payload });
+      showToast({ tone: 'updated', title: 'Changes saved', description: saved.title });
     } else {
-      await createTask.mutateAsync(payload);
-      showToast('Task created');
+      const saved = await createTask.mutateAsync(payload);
+      showToast({
+        tone: 'created',
+        title: 'Task created',
+        description: `${saved.title} · ${format(new Date(saved.dueDate), 'EEE d MMM, h:mm a')}`,
+      });
     }
     setSheet(null);
   };
@@ -88,7 +137,13 @@ export function TaskUIProvider({ children }) {
           setSheet({ type: 'view', task: { ...t, status: t.status === 'completed' ? 'in_progress' : 'completed' } });
         }}
       />
-      <Toast toast={toast} />
+      <Toast
+        toast={toast}
+        leaving={toastLeaving}
+        onClose={dismissToast}
+        onPause={pauseToast}
+        onResume={resumeToast}
+      />
     </TaskUIContext.Provider>
   );
 }

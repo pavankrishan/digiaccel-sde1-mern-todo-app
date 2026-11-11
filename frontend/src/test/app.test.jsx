@@ -84,6 +84,10 @@ describe('Home', () => {
 
     await waitFor(() => expect(screen.queryByRole('dialog')).not.toBeInTheDocument());
     expect(db.at(-1)).toMatchObject({ title: 'Doing Homework', priority: 'high' });
+
+    const toast = await screen.findByRole('status');
+    expect(toast).toHaveTextContent('Task created');
+    expect(toast).toHaveTextContent('Doing Homework');
   });
 
   it('edits a task', async () => {
@@ -96,11 +100,26 @@ describe('Home', () => {
     expect((await screen.findAllByText('Final Wireframe')).length).toBeGreaterThan(0);
   });
 
-  it('deletes a task', async () => {
+  it('deletes a task and confirms with a toast', async () => {
     renderApp();
     await userEvent.click(await screen.findByRole('button', { name: 'Delete "Buy a cat food"' }));
-    await waitFor(() => expect(screen.queryByText('Buy a cat food')).not.toBeInTheDocument());
+    await waitFor(() =>
+      expect(screen.queryAllByRole('checkbox', { name: /Buy a cat food/ })).toHaveLength(0),
+    );
     expect(db.some((t) => t.title === 'Buy a cat food')).toBe(false);
+
+    const toast = await screen.findByRole('status');
+    expect(toast).toHaveTextContent('Task deleted');
+    expect(toast).toHaveTextContent('Buy a cat food');
+    await userEvent.click(within(toast).getByRole('button', { name: 'Dismiss notification' }));
+    await waitFor(() => expect(screen.queryByRole('status')).not.toBeInTheDocument());
+  });
+
+  it('shows skeleton loaders while tasks are loading', async () => {
+    renderApp();
+    expect(screen.getAllByLabelText('Loading tasks').length).toBeGreaterThan(0);
+    await screen.findAllByText('Finishing Wireframe');
+    expect(screen.queryByLabelText('Loading tasks')).not.toBeInTheDocument();
   });
 
   it('shows weekly cards with open / completed counts and expands them', async () => {

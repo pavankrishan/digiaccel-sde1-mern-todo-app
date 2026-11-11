@@ -4,6 +4,7 @@ import { keepPreviousData } from '@tanstack/react-query';
 import { ArrowLeft, Search as SearchIcon, X } from 'lucide-react';
 import TaskList from '../components/TaskList';
 import { useTasks } from '../hooks/useTasks';
+import { Spinner } from '../components/Loaders';
 
 function useDebounced(value, delay = 300) {
   const [debounced, setDebounced] = useState(value);
@@ -55,7 +56,7 @@ export default function Search() {
               <X size={16} />
             </button>
           )}
-          <SearchIcon size={18} />
+          {query.isFetching ? <Spinner size={18} className="text-primary" /> : <SearchIcon size={18} />}
         </div>
       </form>
 

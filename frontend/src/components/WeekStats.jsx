@@ -34,7 +34,13 @@ function StatCard({ tone, label, value, icon, loading }) {
         <span className="text-xs">{label}</span>
       </div>
       <p className="mt-2 pl-8">
-        <span className="text-xl font-semibold tabular-nums">{loading ? '–' : String(value).padStart(2, '0')}</span>
+        {loading ? (
+          <span className="skeleton inline-block h-6 w-8 align-middle" aria-label="Loading" />
+        ) : (
+          <span key={value} className="animate-pop inline-block text-xl font-semibold tabular-nums">
+            {String(value).padStart(2, '0')}
+          </span>
+        )}
         <span className="ml-1.5 text-[9px] text-ink/50">This Week</span>
       </p>
     </div>

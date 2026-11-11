@@ -9,6 +9,7 @@ import WeekCard from '../components/WeekCard';
 import { useTaskUI } from '../components/TaskUIProvider';
 import { useTasks, useWeeks } from '../hooks/useTasks';
 import { weekRange, weekStartOf } from '../lib/dates';
+import { SlowServerNotice, WeekCardSkeleton } from '../components/Loaders';
 
 export default function Home() {
   const [selected, setSelected] = useState(() => new Date());
@@ -58,6 +59,7 @@ export default function Home() {
           </div>
 
           <div className="mt-6">
+            <SlowServerNotice loading={weekQuery.isPending} />
             <StatCards completed={stats.completed} pending={stats.pending} loading={weekQuery.isPending} />
           </div>
 
@@ -117,7 +119,12 @@ function WeeklyOverview({ selected }) {
         <span className="text-xs text-muted">Mon – Sun</span>
       </div>
 
-      {weeksQuery.isPending && <div className="h-24 animate-pulse bg-line/70" />}
+      {weeksQuery.isPending && (
+        <ul className="space-y-3">
+          <WeekCardSkeleton />
+          <WeekCardSkeleton />
+        </ul>
+      )}
       {weeksQuery.isError && (
         <p className="text-sm text-danger">
           {weeksQuery.error.message}{' '}

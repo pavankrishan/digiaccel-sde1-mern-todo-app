@@ -3,6 +3,7 @@ import { addHours, startOfHour } from 'date-fns';
 import BottomSheet from './BottomSheet';
 import ClockTimeField from './ClockPicker';
 import DateField from './DatePicker';
+import { Spinner } from './Loaders';
 import { combineDateTime, toDateInput, toTimeInput } from '../lib/dates';
 import { PRIORITY_STYLES } from './PriorityBadge';
 
@@ -172,9 +173,11 @@ export default function TaskFormSheet({ open, task, defaultDate, onClose, onSave
         <button
           type="submit"
           disabled={saving}
-          className="w-full bg-primary py-3 text-[15px] font-medium text-white transition hover:bg-primary-dark disabled:opacity-60"
+          aria-busy={saving}
+          className="flex w-full items-center justify-center gap-2 bg-primary py-3 text-[15px] font-medium text-white transition hover:bg-primary-dark disabled:cursor-wait disabled:opacity-80"
         >
-          {saving ? 'Saving…' : task ? 'Save changes' : 'Create task'}
+          {saving && <Spinner size={18} />}
+          {saving ? (task ? 'Saving changes…' : 'Creating task…') : task ? 'Save changes' : 'Create task'}
         </button>
       </form>
     </BottomSheet>
