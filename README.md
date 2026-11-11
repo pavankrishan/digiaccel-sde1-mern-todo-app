@@ -8,7 +8,7 @@ A mobile-first to-do app where tasks are scheduled by date and time and grouped 
 
 | | URL |
 |---|---|
-| Live app (Vercel) | _add after deploying_ |
+| Live app (Vercel) | https://todo-app-seven-phi-58.vercel.app |
 | API (Render) | https://digiaccel-sde1-mern-todo-app.onrender.com ([health check](https://digiaccel-sde1-mern-todo-app.onrender.com/api/health)) |
 
 > The API runs on Render's free tier and sleeps after about 15 minutes of inactivity, so the first request can take around 30 seconds.
