@@ -8,8 +8,10 @@ A mobile-first to-do app where tasks are scheduled by date and time and grouped 
 
 | | URL |
 |---|---|
-| Live app (Netlify) | _add after deploying_ |
-| API (Render) | _add after deploying_ |
+| Live app (Vercel) | _add after deploying_ |
+| API (Render) | https://digiaccel-sde1-mern-todo-app.onrender.com ([health check](https://digiaccel-sde1-mern-todo-app.onrender.com/api/health)) |
+
+> The API runs on Render's free tier and sleeps after about 15 minutes of inactivity, so the first request can take around 30 seconds.
 
 ## Features
 
@@ -95,5 +97,5 @@ frontend/
 ## Deployment
 
 1. **Database:** create a free MongoDB Atlas cluster and copy its connection string.
-2. **API on Render:** create a new Blueprint from this repo. It reads `render.yaml`. Set `MONGODB_URI`, and set `CORS_ORIGIN` to the Netlify URL.
-3. **Frontend on Netlify:** add the site from the repo with base directory `frontend`. The build settings come from `frontend/netlify.toml`. Set the environment variable `VITE_API_URL=https://<your-api>.onrender.com`.
+2. **API on Render:** create a Web Service from this repo with root directory `backend`, build command `npm ci` and start command `npm start`. You can also create a Blueprint, which reads `render.yaml`. Set `MONGODB_URI`, and set `CORS_ORIGIN` to the Vercel URL.
+3. **Frontend on Vercel:** import the repo with root directory `frontend`. Vercel detects Vite automatically. Set the environment variable `VITE_API_URL=https://<your-api>.onrender.com`. `frontend/vercel.json` sends every route to `index.html`, so client-side routes like `/search` work when you refresh the page.

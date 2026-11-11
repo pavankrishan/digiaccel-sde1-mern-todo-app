@@ -19,6 +19,22 @@ export function createApp() {
   app.use(express.json({ limit: '100kb' }));
   if (process.env.NODE_ENV !== 'test') app.use(morgan('dev'));
 
+  app.get('/', (_req, res) => {
+    res.json({
+      name: 'Weekly To-Do API',
+      health: '/api/health',
+      endpoints: [
+        'GET    /api/tasks?q=&from=&to=&status=',
+        'GET    /api/tasks/weeks?tz=<IANA time zone>',
+        'GET    /api/tasks/:id',
+        'POST   /api/tasks',
+        'PATCH  /api/tasks/:id',
+        'DELETE /api/tasks/:id',
+      ],
+      note: 'All /api/tasks routes require an X-Client-Id header.',
+    });
+  });
+
   app.get('/api/health', (_req, res) => {
     res.json({ status: 'ok', db: mongoose.connection.readyState === 1 ? 'connected' : 'disconnected' });
   });
