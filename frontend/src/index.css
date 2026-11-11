@@ -1,0 +1,51 @@
+@import 'tailwindcss';
+
+@theme {
+  --font-sans: 'Poppins', ui-sans-serif, system-ui, sans-serif;
+
+  --color-primary: #4566ec;
+  --color-primary-dark: #3451d1;
+  --color-navy: #24409b;
+  --color-lavender: #dadcfb;
+  --color-ink: #1b1b1f;
+  --color-muted: #9a9aa5;
+  --color-line: #e8e8ee;
+  --color-surface: #fafafd;
+  --color-done-bg: #edf1fe;
+  --color-done-icon: #a4b3f6;
+  --color-pending-bg: #fde3e3;
+  --color-pending-icon: #f19c9c;
+  --color-danger: #e5484d;
+
+  --animate-sheet-up: sheet-up 0.25s ease-out;
+  --animate-fade-in: fade-in 0.2s ease-out;
+
+  @keyframes sheet-up {
+    from { transform: translateY(100%); }
+    to { transform: translateY(0); }
+  }
+  @keyframes fade-in {
+    from { opacity: 0; }
+    to { opacity: 1; }
+  }
+}
+
+@layer base {
+  html {
+    -webkit-tap-highlight-color: transparent;
+  }
+  body {
+    @apply bg-[#ececf1] font-sans text-ink antialiased;
+  }
+  button {
+    @apply cursor-pointer;
+  }
+  input[type='date']::-webkit-calendar-picker-indicator,
+  input[type='time']::-webkit-calendar-picker-indicator {
+    @apply cursor-pointer opacity-60;
+  }
+}
+
+@utility input-base {
+  @apply w-full rounded-sm border border-line bg-white px-3 py-2.5 text-sm text-ink outline-none transition placeholder:text-muted focus:border-primary focus:ring-2 focus:ring-primary/15;
+}
